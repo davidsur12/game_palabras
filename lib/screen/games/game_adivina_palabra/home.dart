@@ -54,9 +54,7 @@ class _GameAdivinaPalabraState extends State<GameAdivinaPalabra> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Enfocar elemento al inicio'),
-      ),
+
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: FutureBuilder(
