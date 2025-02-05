@@ -1,7 +1,7 @@
 class Palbras{
 
   static Map<int, List<String>> palabras = {
-    1: ["Brisa ", "Viento suave y ligero."],
+    1: ["Brisa", "Viento suave y ligero."],
     2: ["Dardo", "Proyectil pequeño con punta aguda."],
     3: ["Fango", "Barro espeso y húmedo."],
     4: ["Gota", "Pequeña porción de líquido con forma esférica."],
@@ -26,7 +26,7 @@ class Palbras{
     23: ["Monte", "Elevación natural del terreno."],
     24: ["Plaza ", "Espacio público en una ciudad o lugar vacante."],
     25: ["Tinta", " Sustancia líquida usada para escribir o imprimir."],
-    26: ["Brillo ", "Reflejo intenso de la luz."],
+    26: ["Brillo", "Reflejo intenso de la luz."],
     27: ["Trozo", "Parte de algo que se ha separado."],
     28: ["Gruta", "Cueva natural o excavada en roca."],
     29: ["Fardo", "Paquete grande y atado de mercancía."],
