@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:game_palabras/controladores/volumen.dart';
 import 'package:game_palabras/screen/games/game_adivina_palabra/game_pregunta.dart';
 import 'package:game_palabras/utils/avance.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../../../theme/theme.dart';
 
 class GameAdivinaPalabra extends StatefulWidget {
   const GameAdivinaPalabra({super.key});
@@ -15,6 +19,7 @@ class _GameAdivinaPalabraState extends State<GameAdivinaPalabra> {
   int totalItems = 100; // Total de elementos
   int columns = 4; // Número de columnas
   int focusNumber = 75; // Número que queremos enfocar al inicio
+  final VolumeController volumeController = Get.put(VolumeController());
 
   @override
   void initState() {
@@ -53,11 +58,103 @@ class _GameAdivinaPalabraState extends State<GameAdivinaPalabra> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
+    return  Scaffold(
+
+      appBar: AppBar(
+        backgroundColor:  MaterialTheme.darkMediumContrastScheme().surface,
+        actions: [
+          Obx(() => IconButton(
+            icon: Icon(
+              volumeController.isMuted.value ? Icons.volume_off : Icons.volume_up,
+              color: Colors.white,
+              size: 40.0,
+            ),
+            onPressed: () {
+              volumeController.toggleVolume(); // Alterna el estado y reproduce sonido
+            },
+          )),
+        ],
+        title: FutureBuilder(future: nivelesDesbloqueados().cargarPuntos(nivelesDesbloqueados.keyPuntosAdivinaPalabra), builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Text("Cargando..."); // 🔄 Mientras carga
+        } else if (snapshot.hasError) {
+          return Text("Error");
+        } else {
+          return Center(child:Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+
+            Text(
+                snapshot.data?[nivelesDesbloqueados.keyPuntosAdivinaPalabra].toString() ?? "CARGANDO..",
+                style:  GoogleFonts.lato( // Usamos la fuente Lato
+                    textStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 38,
+
+                    ))),
+            SizedBox(width: 10,),
+            Image.asset("assets/images/bolsa_de_dinero.png", width: 50,)
+          ],)
+          
+          ); // ✅ Título cargado
+        }
+
+      },),
+        automaticallyImplyLeading: false,),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Expanded( // 🔹 Restringe la altura del GridView
+              child: FutureBuilder(
+                future: nivelesDesbloqueados().cargarDatos(nivelesDesbloqueados.keyAdivinaPalabra),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text("Error: ${snapshot.error}"));
+                  } else if (snapshot.hasData) {
+                    Map<String, dynamic> data = snapshot.data!;
+                    focusNumber = data[nivelesDesbloqueados.keyAdivinaPalabra];
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      focusOnItemCentered(focusNumber);
+                    });
+
+                    return GridView.builder(
+                      controller: _scrollController,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: columns,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: totalItems,
+                      itemBuilder: (context, index) {
+                        int id = totalItems - index;
+                        bool desbloqueado = (100 - index) <= data[nivelesDesbloqueados.keyAdivinaPalabra];
+
+                        return nivelItem(screenWidth, id, desbloqueado);
+                      },
+                    );
+                  } else {
+                    return Center(child: Text("No hay datos disponibles"));
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    /*
+      Scaffold(
 
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder(
+        child: Column(children: [
+
+          FutureBuilder(
           future: nivelesDesbloqueados().cargarDatos(nivelesDesbloqueados.keyAdivinaPalabra),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -99,91 +196,14 @@ class _GameAdivinaPalabraState extends State<GameAdivinaPalabra> {
               return Center(child: Text("No hay datos disponibles"));
             }
           },
-        ),
+        )],)
+
+       ,
       ),
     );
-  }
 
-  /*
-      GridView.builder(
-        controller: _scrollController, // Vinculamos el ScrollController
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: columns, // Número de columnas
-          crossAxisSpacing: 10, // Espacio horizontal entre widgets
-          mainAxisSpacing: 10, // Espacio vertical entre widgets
-        ),
-        itemCount: totalItems, // Total de elementos
-        itemBuilder: (context, index) {
-          int id = totalItems - index; // Convertimos índice a número deseado
-          bool desbloqueado = id % 2 == 0; // Ejemplo de desbloqueo
-          return nivelItem(MediaQuery.of(context).size.width, id, desbloqueado);
-        },
-      ),
     */
-  /*
-  @override
-  Widget build(BuildContext context) {
-    double screenWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
-    return Scaffold(
-      body:
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder(future: nivelesDesbloqueados().cargarDatos(nivelesDesbloqueados.keyAdivinaPalabra), builder: (context, snapshot) {
-
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(), // Mostrar un indicador de carga mientras se resuelve el Future
-            );
-          }
-          else if (snapshot.hasError) {
-            return Center(
-              child: Text("Error: ${snapshot.error}"), // Mostrar un mensaje de error si ocurre uno
-            );
-          }
-
-          else if(snapshot.hasData){
-
-
-           return  GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4, // Número de columnas
-                crossAxisSpacing: 10, // Espacio horizontal entre widgets
-                mainAxisSpacing: 10, // Espacio vertical entre widgets
-              ),
-              itemCount: 100, // Total de elementos
-              itemBuilder: (context, index) {
-                int id = 100 - index;
-              //  Map<String, dynamic> nivelDes =await  nivelesDesbloqueados().cargarDatos(nivelesDesbloqueados.keyAdivinaPalabra) as Map<String, dynamic> ;
-                Map<String, dynamic> data = snapshot.data!;
-                print(data[nivelesDesbloqueados.keyAdivinaPalabra]);
-                //bool desbloqueado = id % 2 == 0; // Ejemplo: pares desbloqueados, impares bloqueados
-                bool desbloqueado = (100- index) <= data[nivelesDesbloqueados.keyAdivinaPalabra]  ? true : false;
-
-                return nivelItem(screenWidth, id, desbloqueado);
-              },
-            );
-          }
-          else{
-
-            return Center(child: Text("no hay datos disponibles"),);
-          }
-
-        },)
-
-      ),
-
-    );
-
-
   }
-  */
-
-
-
 
   Widget nivelItem(double screenWidth, int id, bool desbloqueado) {
 
