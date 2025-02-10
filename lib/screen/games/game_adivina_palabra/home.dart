@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:game_palabras/controladores/volumen.dart';
 import 'package:game_palabras/screen/games/game_adivina_palabra/game_pregunta.dart';
+import 'package:game_palabras/screen/screen_home.dart';
 import 'package:game_palabras/utils/avance.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -58,94 +59,108 @@ class _GameAdivinaPalabraState extends State<GameAdivinaPalabra> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
-    return  Scaffold(
-
-      appBar: AppBar(
-        backgroundColor:  MaterialTheme.darkMediumContrastScheme().surface,
-        actions: [
-          Obx(() => IconButton(
-            icon: Icon(
-              volumeController.isMuted.value ? Icons.volume_off : Icons.volume_up,
-              color: Colors.white,
-              size: 40.0,
-            ),
-            onPressed: () {
-              volumeController.toggleVolume(); // Alterna el estado y reproduce sonido
-            },
-          )),
-        ],
-        title: FutureBuilder(future: nivelesDesbloqueados().cargarPuntos(nivelesDesbloqueados.keyPuntosAdivinaPalabra), builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Text("Cargando..."); // 🔄 Mientras carga
-        } else if (snapshot.hasError) {
-          return Text("Error");
-        } else {
-          return Center(child:Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-
-            Text(
-                snapshot.data?[nivelesDesbloqueados.keyPuntosAdivinaPalabra].toString() ?? "CARGANDO..",
-                style:  GoogleFonts.lato( // Usamos la fuente Lato
-                    textStyle: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 38,
-
-                    ))),
-            SizedBox(width: 10,),
-            Image.asset("assets/images/bolsa_de_dinero.png", width: 50,)
-          ],)
-          
-          ); // ✅ Título cargado
-        }
-
-      },),
-        automaticallyImplyLeading: false,),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Expanded( // 🔹 Restringe la altura del GridView
-              child: FutureBuilder(
-                future: nivelesDesbloqueados().cargarDatos(nivelesDesbloqueados.keyAdivinaPalabra),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text("Error: ${snapshot.error}"));
-                  } else if (snapshot.hasData) {
-                    Map<String, dynamic> data = snapshot.data!;
-                    focusNumber = data[nivelesDesbloqueados.keyAdivinaPalabra];
-
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      focusOnItemCentered(focusNumber);
-                    });
-
-                    return GridView.builder(
-                      controller: _scrollController,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: columns,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
-                      itemCount: totalItems,
-                      itemBuilder: (context, index) {
-                        int id = totalItems - index;
-                        bool desbloqueado = (100 - index) <= data[nivelesDesbloqueados.keyAdivinaPalabra];
-
-                        return nivelItem(screenWidth, id, desbloqueado);
-                      },
-                    );
-                  } else {
-                    return Center(child: Text("No hay datos disponibles"));
-                  }
-                },
+    return  WillPopScope(
+      onWillPop: () async {
+        // Navega a la pantalla deseada al presionar "Atrás"
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ScreenHome()), // Reemplaza con tu pantalla destino
+        );
+        return false; // Evita que la app cierre o vuelva a la pantalla anterior automáticamente
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: MaterialTheme.darkMediumContrastScheme().surface,
+          actions: [
+            Obx(() => IconButton(
+              icon: Icon(
+                volumeController.isMuted.value ? Icons.volume_off : Icons.volume_up,
+                color: Colors.white,
+                size: 40.0,
               ),
-            ),
+              onPressed: () {
+                volumeController.toggleVolume();
+              },
+            )),
           ],
+          title: FutureBuilder(
+            future: nivelesDesbloqueados().cargarPuntos(nivelesDesbloqueados.keyPuntosAdivinaPalabra),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Text("Cargando...");
+              } else if (snapshot.hasError) {
+                return Text("Error");
+              } else {
+                return Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        snapshot.data?[nivelesDesbloqueados.keyPuntosAdivinaPalabra].toString() ?? "CARGANDO..",
+                        style: GoogleFonts.lato(
+                          textStyle: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 38,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Image.asset("assets/images/bolsa_de_dinero.png", width: 50),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+          automaticallyImplyLeading: false, // Elimina el botón de retroceso por defecto
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: FutureBuilder(
+                  future: nivelesDesbloqueados().cargarDatos(nivelesDesbloqueados.keyAdivinaPalabra),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text("Error: ${snapshot.error}"));
+                    } else if (snapshot.hasData) {
+                      Map<String, dynamic> data = snapshot.data!;
+                      focusNumber = data[nivelesDesbloqueados.keyAdivinaPalabra];
+
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        focusOnItemCentered(focusNumber);
+                      });
+
+                      return GridView.builder(
+                        controller: _scrollController,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: columns,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                        ),
+                        itemCount: totalItems,
+                        itemBuilder: (context, index) {
+                          int id = totalItems - index;
+                          bool desbloqueado = (100 - index) <= data[nivelesDesbloqueados.keyAdivinaPalabra];
+
+                          return nivelItem(screenWidth, id, desbloqueado);
+                        },
+                      );
+                    } else {
+                      return Center(child: Text("No hay datos disponibles"));
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+
 
     /*
       Scaffold(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:game_palabras/screen/screen_home.dart';
 import 'package:game_palabras/screen/splash_screen/splashScreen.dart';
 import 'package:game_palabras/utils/cadenas.dart';
 import 'package:get/get.dart';
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
         darkTheme:
             ThemeData(colorScheme: MaterialTheme.darkMediumContrastScheme()),
        themeMode: ThemeMode.dark,
-        home: SplashScreen()
+        home: ScreenHome()//SplashScreen()
         //const MyHomePage(title: 'Flutter Demo Home Page'),
         );
   }

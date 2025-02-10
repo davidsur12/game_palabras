@@ -38,6 +38,20 @@ class nivelesDesbloqueados {
     return {key: nivelDes};
   }
 
+  //aptualizar puntos
+  Future<void> updatePuntosAdivinaPalabra(String key, int puntosAIncrementar) async {
+    final sharedPreferences = await SharedPreferences.getInstance();
+
+    // Obtener los puntos actuales
+    int puntosActuales = sharedPreferences.getInt(key) ?? 0;
+
+    // Sumar los nuevos puntos
+    int nuevosPuntos = puntosActuales + puntosAIncrementar;
+
+    // Guardar los nuevos puntos
+    await sharedPreferences.setInt(key, nuevosPuntos);
+  }
+
 
   //metodo para eliminar dato especifico
 Future<void> eliminarDatoEspecifico(String key)async{

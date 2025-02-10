@@ -53,7 +53,7 @@ class Palbras{
     50:["Aguja", "Instrumento delgado y puntiagudo utilizado para coser."],
     51:["Asta", "mástil de una bandera."],
     52:["Hacha", "Herramienta con filo usada para cortar madera."],
-    53:["Gesto ", "Movimiento del rostro o las manos para expresar algo."],
+    53:["Gesto", "Movimiento del rostro o las manos para expresar algo."],
     54:["Norte", "Punto cardinal situado en la parte superior de un mapa."],
     55:["Crisma", " Aceite consagrado usado en ceremonias religiosas."],
     56:["Horma", "Molde usado para dar forma a objetos."],

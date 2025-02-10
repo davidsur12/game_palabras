@@ -1,10 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:game_palabras/controladores/volumen.dart';
 import 'package:game_palabras/screen/games/game_adivina_palabra/home.dart';
 import 'package:game_palabras/screen/games/game_adivina_palabra/palabras.dart';
 import 'package:game_palabras/utils/avance.dart';
 import 'package:game_palabras/utils/cadenas.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 
@@ -43,7 +45,7 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
       ValueNotifier(List.filled(10, false));
   ValueNotifier<List<bool>> letrasCorrectasNotifier =
       ValueNotifier(List.filled(10, false));
-
+  final VolumeController volumeController = Get.put(VolumeController());
   @override
   void initState() {
     super.initState();
@@ -82,6 +84,7 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
     double anchoPantalla = MediaQuery.of(context).size.width;
     double altoPantalla = MediaQuery.of(context).size.height;
 
+
     return FutureBuilder<int>(
       future: obtenerNivel(),
       builder: (context, snapshot) {
@@ -106,7 +109,9 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
             return false;
           },
           child: Scaffold(
-            body: loadPalabra(anchoPantalla, altoPantalla),
+            body:
+            SingleChildScrollView(child:loadPalabra(anchoPantalla, altoPantalla),)
+           ,
           ),
         );
       },
@@ -124,7 +129,21 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(height: 45),
-        Center(child: Text("Palabrazos")),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Obx(() => IconButton(
+              icon: Icon(
+                volumeController.isMuted.value ? Icons.volume_off : Icons.volume_up,
+                color: Colors.white,
+                size: 30.0,
+              ),
+              onPressed: () {
+                volumeController.toggleVolume(); // Alterna el volumen
+              },
+            )),
+          ],
+        ),
         SizedBox(height: 15),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -197,15 +216,38 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
     return ValueListenableBuilder<List<String>>(
       valueListenable: palabraMostradaNotifier,
       builder: (context, palabraMostrada, child) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        return
+          Padding(
+            padding: EdgeInsets.all(16), // Margen alrededor del Wrap
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 10,
+              runSpacing: 10,
+              children: palabraMostrada.map((letra) {
+                return Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(width: 2, color: Colors.black)),
+                  ),
+                  child: Text(
+                    letra,
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                );
+              }).toList(),
+            ),
+          );
+
+        /*
+          Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 10, // Espaciado horizontal entre letras
+          runSpacing: 10, // Espaciado vertical entre líneas
           children: palabraMostrada.map((letra) {
             return Container(
-              margin: EdgeInsets.symmetric(horizontal: 5),
               padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
-                border:
-                    Border(bottom: BorderSide(width: 2, color: Colors.black)),
+                border: Border(bottom: BorderSide(width: 2, color: Colors.black)),
               ),
               child: Text(
                 letra,
@@ -214,6 +256,8 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
             );
           }).toList(),
         );
+
+*/
       },
     );
   }
@@ -265,13 +309,13 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
             letrasCorrectasNotifier.value =
                 List.from(letrasCorrectasNotifier.value)..[index] = true;
             //sumo puntos
-            puntajeNotifier.value += 50;
+            puntajeNotifier.value += 25;
 
           } else {
             letrasCorrectasNotifier.value =
                 List.from(letrasCorrectasNotifier.value)..[index] = false;
             //reto puntos
-            puntajeNotifier.value -= 50;
+            puntajeNotifier.value -= 25;
             if(puntajeNotifier.value <= 0){
               //si los puntos llegan a 0 se reinica el nivel
               mostrarMensajeFallido();
@@ -316,14 +360,18 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
   void verificarCompletado() {
     if (!palabraMostradaNotifier.value.contains("_")) {
       print("✅ Cadena completada");
-      mostrarMensaje(Cadenas.get("Nivel_completado"));
+      mostrarMensajeFelicitaciones(Cadenas.get("Nivel_completado"));
     }
   }
 
-  void mostrarMensaje(String mensaje) async {
+  void mostrarMensajeFelicitaciones(String mensaje) async {
     Map<String, dynamic> datos = await nivelesDesbloqueados()
         .cargarDatos(nivelesDesbloqueados.keyAdivinaPalabra);
     int nivel = datos[nivelesDesbloqueados.keyAdivinaPalabra] ?? 1;
+    
+    //Actualiso los puntos globales con los puntos obtenidos en el nivel
+    
+    await nivelesDesbloqueados().updatePuntosAdivinaPalabra(nivelesDesbloqueados.keyPuntosAdivinaPalabra, puntajeNotifier.value);
 
     if (nivel < 100) {
       nivelesDesbloqueados().saveDataNivelAdivinaPalabra(
@@ -461,6 +509,7 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
       MaterialPageRoute(builder: (context) => ScreenPregunta(nivel: widget.nivel)), // Asegúrate de que esta pantalla sea la que deseas reiniciar
     );
   }
+
   void mostrarMensajeFallido() {
     // Mostrar el AlertDialog
     showDialog(
@@ -474,11 +523,7 @@ class _ScreenPreguntaState extends State<ScreenPregunta> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.error_outline, // Icono de error
-                size: 50,
-                color: Colors.white,
-              ),
+              Lottie.asset('assets/lottie/error.json', height: 90),
               SizedBox(height: 10),
               Text(
                 "¡Fallaste! Intenta de nuevo.",
