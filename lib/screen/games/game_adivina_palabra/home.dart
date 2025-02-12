@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:game_palabras/controladores/volumen.dart';
+import 'package:game_palabras/screen/anuncios/banner.dart';
 import 'package:game_palabras/screen/games/game_adivina_palabra/game_pregunta.dart';
 import 'package:game_palabras/screen/screen_home.dart';
 import 'package:game_palabras/utils/avance.dart';
@@ -158,6 +159,9 @@ class _GameAdivinaPalabraState extends State<GameAdivinaPalabra> {
             ],
           ),
         ),
+
+          bottomNavigationBar: BannerAdWidget(),
+
       ),
     );
 

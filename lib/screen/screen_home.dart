@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:game_palabras/controladores/volumen.dart';
+import 'package:game_palabras/screen/anuncios/banner.dart';
 import 'package:game_palabras/screen/games/game_adivina_palabra/home.dart';
+import 'package:game_palabras/theme/theme.dart';
+import 'package:game_palabras/utils/avance.dart';
 import 'package:game_palabras/utils/cadenas.dart';
 import 'package:lottie/lottie.dart';
 import 'package:get/get.dart';
@@ -21,6 +24,24 @@ class _ScreenHomeState extends State<ScreenHome> {
     return
 
       Scaffold(
+       appBar:
+       AppBar(
+          backgroundColor: MaterialTheme.darkMediumContrastScheme().surface,
+          actions: [
+            Obx(() => IconButton(
+              icon: Icon(
+                volumeController.isMuted.value ? Icons.volume_off : Icons.volume_up,
+                color: Colors.white,
+                size: 40.0,
+              ),
+              onPressed: () {
+                volumeController.toggleVolume();
+              },
+            )),
+          ],
+
+          automaticallyImplyLeading: false, // Elimina el botón de retroceso por defecto
+        ),
         body: WillPopScope(
           onWillPop: () async {
             SystemNavigator.pop(); // Cierra la aplicación
@@ -30,7 +51,7 @@ class _ScreenHomeState extends State<ScreenHome> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
+                /*
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -46,6 +67,8 @@ class _ScreenHomeState extends State<ScreenHome> {
                     )),
                   ],
                 ),
+
+                */
                 // Imagen en la parte superior
                 InkWell(
                   onTap: () {
@@ -88,6 +111,9 @@ class _ScreenHomeState extends State<ScreenHome> {
             ),
           ),
         ),
+
+        bottomNavigationBar: BannerAdWidget(),
+        // 📌 Agrega esto
       );
 
 

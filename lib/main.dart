@@ -1,15 +1,26 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:game_palabras/screen/games/game_adivina_palabra/game_pregunta.dart';
 import 'package:game_palabras/screen/screen_home.dart';
 import 'package:game_palabras/screen/splash_screen/splashScreen.dart';
 import 'package:game_palabras/utils/cadenas.dart';
 import 'package:get/get.dart';
 import 'package:game_palabras/theme/theme.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+
 
 
 void main() async {
 
-
   WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
+  MobileAds.instance.updateRequestConfiguration(
+    RequestConfiguration(testDeviceIds: ['ABC123XYZ']),
+  );
+
   await Cadenas.loadStrings();
   // runApp(const MyApp());
   runApp(MyApp());
